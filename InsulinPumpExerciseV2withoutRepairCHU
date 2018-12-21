@@ -7,5 +7,26 @@ const int valueE =3; // value error
 
 module InsulinPump
 
+    sensor : [0..3] init ok;
+    phone : [0..3] init ok;
+    pump : [0..3] init ok;
+
+    []sensor = ok -> 0.009: (sensor'=valueE) + 0.001:(sensor'=crashE) + 0.99: (sensor'=ok);
+    []sensor = valueE -> 0.9: (sensor'=valueE) + 0.1: (sensor'=crashE);
+    []sensor = crashE -> 0.1: (sensor'=crashE);
+
+    []phone = ok & sensor = ok     -> 0.001: (phone'=valueE) + 0.009: (phone'=crashE) + 0.99: (phone'=ok);
+    []phone = ok & sensor = valueE -> 0.009: (phone'=crashE) + 0.991: (phone'=valueE);
+    []phone = ok & sensor = crashE -> 0.009: (phone'=crashE) + 0.991: (phone'=fss);
+    []phone = fss -> 0.999: (phone'=fss) + 0.001: (phone'=crashE);
+    []phone = valueE -> 0.9: (phone'=valueE) + 0.1: (phone'=crashE);
+    []phone = crashE -> 1.0: (phone'=crashE);
+
+    []pump = ok & phone = ok     -> 0.001: (pump'=crashE) + 0.999: (pump'=ok);
+    []pump = ok & phone = valueE -> 0.001: (pump'=crashE) + 0.999: (pump'=valueE);
+    []pump = ok & phone = crashE -> 0.001: (pump'=crashE) + 0.999: (pump'=fss);
+    []pump = ok & phone = fss    -> 0.001: (pump'=crashE) + 0.999: (pump'=fss);
+    []pump = fss -> 0.999: (pump'=fss) + 0.001: (pump'=crashE);
+    []pump = crashE -> 1.0: (pump'=crashE);
 
 endmodule
