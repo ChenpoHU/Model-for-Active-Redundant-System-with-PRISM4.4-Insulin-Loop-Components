@@ -1,0 +1,33 @@
+ctmc
+
+const int ok = 0; // device running in normal mode
+const int fss = 1; //fail safe state
+const int crashE = 2; // crash error
+const int valueE =3; // value error
+
+module InsulinPump
+
+    sensor : [0..3] init ok;
+    phone : [0..3] init ok;
+    pump : [0..3] init ok;
+
+    []sensor = ok -> 0.009: (sensor'=valueE) + 0.001:(sensor'=crashE) + 0.99: (sensor'=ok);
+    []sensor = valueE -> 0.5: (sensor'=valueE) + 0.1: (sensor'=crashE) + 0.4: (sensor'=ok);
+    []sensor = crashE -> 0.9: (sensor'=crashE) + 0.1: (sensor'=ok);
+
+    []phone = ok & sensor = ok     -> 0.001: (phone'=valueE) + 0.009: (phone'=crashE) + 0.99: (phone'=ok);
+    []phone = ok & sensor = valueE -> 0.009: (phone'=crashE) + 0.991: (phone'=valueE);
+    []phone = ok & sensor = crashE -> 0.009: (phone'=crashE) + 0.991: (phone'=fss);
+    []phone = fss -> 0.3: (phone'=fss) + 0.7: (phone'=ok);
+    []phone = valueE -> 0.3: (phone'=valueE) + 0.7: (phone'=ok);
+    []phone = crashE -> 0.1: (phone'=crashE) + 0.9: (phone'=ok);
+
+    []pump = ok & phone = ok     -> 0.001: (pump'=crashE) + 0.999: (pump'=ok);
+    []pump = ok & phone = valueE -> 0.001: (pump'=crashE) + 0.999: (pump'=valueE); 
+    []pump = ok & phone = crashE -> 0.001: (pump'=crashE) + 0.999: (pump'=fss);
+    []pump = ok & phone = fss    -> 0.001: (pump'=crashE) + 0.999: (pump'=fss);
+    []pump = fss -> 0.899: (pump'=fss) + 0.001: (pump'=crashE) + 0.1: (pump'=ok);
+    []pump = valueE -> 0.9: (pump'=valueE) + 0.1: (pump'=ok);
+    []pump = crashE -> 0.99: (pump'=crashE) + 0.01: (pump'=ok);
+
+endmodule
