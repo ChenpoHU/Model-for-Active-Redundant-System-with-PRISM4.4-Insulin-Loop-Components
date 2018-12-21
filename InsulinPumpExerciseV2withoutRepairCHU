@@ -1,0 +1,11 @@
+ctmc
+
+const int ok = 0; // device running in normal mode
+const int fss = 1; //fail safe state
+const int crashE = 2; // crash error
+const int valueE =3; // value error
+
+module InsulinPump
+
+
+endmodule
