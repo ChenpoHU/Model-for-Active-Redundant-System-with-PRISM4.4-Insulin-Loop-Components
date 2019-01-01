@@ -12,7 +12,7 @@
 ## ■ for the parallel components the system reliability is equal to the system
 safety since the system may potentially cause a hazard if it does not
 function correctly
-![PFSActiveRedundant](PFSActiveRedundant.png)
+![PFSActiveRedundant](PFSActiveRedundant.PNG)
 ## TMR system: R(t) < S(t)
 ### voting, triple modular redundancy (TMR)
 ## ■ for TMR systems the reliability is not equal to the safety since the system
