@@ -5,7 +5,9 @@
 ### - Controllable Insulin Pump
 ### - Smartphone
 
-## Model for Active Redundant System with PRISM 4.4
+## Active redundancy
+### parallel fail-silent components
+### voting, triple modular redundancy (TMR)
 
 ## Parallel system: R(t) = S(t)
 ## ■ for the parallel components the system reliability is equal to the system
