@@ -1,19 +1,33 @@
+//An example with two parallel connected components A and B (sensor 1 and sensor 2) with maintenance. The failure rates are ?A and ?B
+//Identification of states: Construction of Markov Graph:
+//1: A correct B correct P1(t)
+//2: A failed B correct P2(t)
+//3: A correct B failed P3(t)
+//4: A failed B failed P4(t)
+
 ctmc
 
 const int ok = 0; // device running in normal mode
 const int fss = 1; //fail safe state
 const int crashE = 2; // crash error
 const int valueE =3; // value error
+const int standby = 4; // standby 
 
 module InsulinPump
 
-    sensor : [0..3] init ok;
+    sensor1 : [0..4] init ok;
+    sensor2 :  [0..4] init ok;
     phone : [0..3] init ok;
     pump : [0..3] init ok;
+   //alarm 
 
-    []sensor = ok -> 0.009: (sensor'=valueE) + 0.001:(sensor'=crashE) + 0.99: (sensor'=ok);
-    []sensor = valueE -> 0.5: (sensor'=valueE) + 0.1: (sensor'=crashE) + 0.4: (sensor'=ok);
-    []sensor = crashE -> 0.9: (sensor'=crashE) + 0.1: (sensor'=ok);
+    []sensor1 = ok -> 0.009: (sensor1'=valueE) + 0.001:(sensor1'=crashE) + 0.99: (sensor1'=ok);
+    []sensor1 = valueE -> 0.5: (sensor1'=valueE) + 0.1: (sensor1'=crashE) + 0.4: (sensor1'=ok);
+    []sensor1 = crashE -> 0.9: (sensor1'=crashE) + 0.1: (sensor1'=ok);
+
+    []sensor2 = ok -> 0.009: (sensor2'=valueE) + 0.001:(sensor2'=crashE) + 0.99: (sensor2'=ok);
+    []sensor2 = valueE -> 0.5: (sensor2'=valueE) + 0.1: (sensor2'=crashE) + 0.4: (sensor2'=ok);
+    []sensor2 = crashE -> 0.9: (sensor2'=crashE) + 0.1: (sensor2'=ok);
 
     []phone = ok & sensor = ok     -> 0.001: (phone'=valueE) + 0.009: (phone'=crashE) + 0.99: (phone'=ok);
     []phone = ok & sensor = valueE -> 0.009: (phone'=crashE) + 0.991: (phone'=valueE);
