@@ -4,34 +4,38 @@
 //2: A failed B correct P2(t)
 //3: A correct B failed P3(t)
 //4: A failed B failed P4(t)
+//Parallel system: R(t) = S(t)
 
 ctmc
 
-const int ok = 0; // device running in normal mode
+const int ok = 0; // device running in normal mode // no fail in sensor 
 const int fss = 1; //fail safe state
-const int crashE = 2; // crash error
+const int crashE = 2; // crash error //two fail in sensor 
 const int valueE =3; // value error
-const int standby = 4; // standby 
+const int onefail = 4;
 
 module InsulinPump
 
-    sensor1 : [0..4] init ok;
-    sensor2 :  [0..4] init ok;
+    sensorPFS : [0..4] init ok;
+//    sensor2 :  [0..4] init ok;
     phone : [0..3] init ok;
     pump : [0..3] init ok;
    //alarm 
 
-    []sensor1 = ok -> 0.009: (sensor1'=valueE) + 0.001:(sensor1'=crashE) + 0.99: (sensor1'=ok);
-    []sensor1 = valueE -> 0.5: (sensor1'=valueE) + 0.1: (sensor1'=crashE) + 0.4: (sensor1'=ok);
-    []sensor1 = crashE -> 0.9: (sensor1'=crashE) + 0.1: (sensor1'=ok);
+    []sensorPFS = ok -> 0.009: (sensorPFS'=valueE) + 0.001:(sensorPFS'=crashE) + 0.90: (sensorPFS'=ok) + 0.09: (sensorPFS'=onefail);
+    []sensorPFS = onefail -> 0.7: (sensorPFS'=onefail)+ 0.1: (sensorPFS'=valueE) + 0.05: (sensorPFS'=crashE) + 0.15: (sensorPFS'=ok);
+    []sensorPFS = valueE -> 0.5: (sensorPFS'=valueE) + 0.1: (sensorPFS'=crashE) + 0.2: (sensorPFS'=ok) + 0.2: (sensorPFS'=onefail);
+    []sensorPFS = crashE -> 0.9: (sensorPFS'=crashE) + 0.1: (sensorPFS'=ok);
 
-    []sensor2 = ok -> 0.009: (sensor2'=valueE) + 0.001:(sensor2'=crashE) + 0.99: (sensor2'=ok);
-    []sensor2 = valueE -> 0.5: (sensor2'=valueE) + 0.1: (sensor2'=crashE) + 0.4: (sensor2'=ok);
-    []sensor2 = crashE -> 0.9: (sensor2'=crashE) + 0.1: (sensor2'=ok);
+//    []sensor2 = ok -> 0.009: (sensor2'=valueE) + 0.001:(sensor2'=crashE) + 0.99: (sensor2'=ok);
+//    []sensor2 = valueE -> 0.5: (sensor2'=valueE) + 0.1: (sensor2'=crashE) + 0.4: (sensor2'=ok);
+//    []sensor2 = crashE -> 0.9: (sensor2'=crashE) + 0.1: (sensor2'=ok);
 
-    []phone = ok & sensor = ok     -> 0.001: (phone'=valueE) + 0.009: (phone'=crashE) + 0.99: (phone'=ok);
-    []phone = ok & sensor = valueE -> 0.009: (phone'=crashE) + 0.991: (phone'=valueE);
-    []phone = ok & sensor = crashE -> 0.009: (phone'=crashE) + 0.991: (phone'=fss);
+    []phone = ok & sensorPFS = ok     -> 0.001: (phone'=valueE) + 0.009: (phone'=crashE) + 0.99: (phone'=ok);
+    []phone = ok & sensorPFS = onefail     -> 0.001: (phone'=valueE) + 0.009: (phone'=crashE) + 0.99: (phone'=ok);
+    []phone = ok & sensorPFS = valueE -> 0.009: (phone'=crashE) + 0.991: (phone'=valueE);
+    []phone = ok & sensorPFS = crashE -> 0.009: (phone'=crashE) + 0.991: (phone'=fss);
+
     []phone = fss -> 0.3: (phone'=fss) + 0.7: (phone'=ok);
     []phone = valueE -> 0.3: (phone'=valueE) + 0.7: (phone'=ok);
     []phone = crashE -> 0.1: (phone'=crashE) + 0.9: (phone'=ok);
@@ -40,6 +44,7 @@ module InsulinPump
     []pump = ok & phone = valueE -> 0.001: (pump'=crashE) + 0.999: (pump'=valueE); 
     []pump = ok & phone = crashE -> 0.001: (pump'=crashE) + 0.999: (pump'=fss);
     []pump = ok & phone = fss    -> 0.001: (pump'=crashE) + 0.999: (pump'=fss);
+
     []pump = fss -> 0.899: (pump'=fss) + 0.001: (pump'=crashE) + 0.1: (pump'=ok);
     []pump = valueE -> 0.9: (pump'=valueE) + 0.1: (pump'=ok);
     []pump = crashE -> 0.99: (pump'=crashE) + 0.01: (pump'=ok);
